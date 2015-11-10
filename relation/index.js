@@ -9,7 +9,6 @@ var ModelRelation = workspace.models.ModelRelation;
 var actions = require('../lib/actions');
 var helpers = require('../lib/helpers');
 var validateName = helpers.validateName;
-var checkNameConflict = helpers.checkNameConflict;
 
 var async = require('async');
 
@@ -208,9 +207,7 @@ module.exports = yeoman.generators.Base.extend({
     if (this.throughModel) {
       def.through = this.throughModel;
     }
-    
     this.modelDefinition.relations.create(def, function(err) {
-
       helpers.reportValidationError(err, this.log);
       return done(err);
     }.bind(this));
