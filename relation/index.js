@@ -33,7 +33,7 @@ module.exports = yeoman.generators.Base.extend({
     var prompts = [
       {
         name: 'model',
-        message: 'I am modifying this file Select the model to create the relationship from:',
+        message: 'Select the model to create the relationship from:',
         type: 'list',
         choices: this.modelNames
       }
