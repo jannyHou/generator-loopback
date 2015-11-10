@@ -144,7 +144,7 @@ module.exports = yeoman.generators.Base.extend({
             //return the result
             validfn(value, function(err, result){
               if(err) console.error(err);
-              else done(result);
+              else done(result && validateName(value));
             });
             
         }
