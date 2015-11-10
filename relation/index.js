@@ -9,6 +9,9 @@ var ModelRelation = workspace.models.ModelRelation;
 var actions = require('../lib/actions');
 var helpers = require('../lib/helpers');
 var validateName = helpers.validateName;
+var checkNameConflict = helpers.checkNameConflict;
+
+var async = require('async');
 
 module.exports = yeoman.generators.Base.extend({
 
@@ -30,7 +33,7 @@ module.exports = yeoman.generators.Base.extend({
     var prompts = [
       {
         name: 'model',
-        message: 'Select the model to create the relationship from:',
+        message: 'I am modifying this file Select the model to create the relationship from:',
         type: 'list',
         choices: this.modelNames
       }
@@ -65,6 +68,7 @@ module.exports = yeoman.generators.Base.extend({
   },
 
   askForParameters: function() {
+    var modelDef = this.modelDefinition;
     var done = this.async();
 
     var modelChoices = this.modelNames.concat({
@@ -108,7 +112,43 @@ module.exports = yeoman.generators.Base.extend({
           }
           return m;
         },
-        validate: validateName
+        validate: function(value) {
+
+            //return validateName(value) || checkNameConflict(value, modelDef);
+            var done = this.async();
+            //validfn checks whether the relation name has a conflict with property names
+            var validfn = function(value, cb) {
+
+              //set flag isValid
+              var isValid = true;
+           
+              modelDef.properties(function(err, list) {
+                if (err)
+                  console.error(err);
+                else {
+                  //check each property name in the list
+                  async.each(list, function(property, callback) {
+                    //console.log(property.name + '\n');
+                    if(property.name === value) {
+                      console.log('naming conflict');
+                      isValid = false;
+                    };
+                    callback();
+                  }, function(err) {
+                    if(err) console.log(err);
+                    cb(null, isValid);
+                  });
+                };
+              });
+            };
+            
+            //return the result
+            validfn(value, function(err, result){
+              if(err) console.error(err);
+              else done(result);
+            });
+            
+        }
       },
       {
         name: 'foreignKey',
@@ -168,7 +208,9 @@ module.exports = yeoman.generators.Base.extend({
     if (this.throughModel) {
       def.through = this.throughModel;
     }
+    
     this.modelDefinition.relations.create(def, function(err) {
+
       helpers.reportValidationError(err, this.log);
       return done(err);
     }.bind(this));
